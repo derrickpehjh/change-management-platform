@@ -6,9 +6,8 @@ import { CALENDAR_STATUSES, WITHDRAWABLE_STATUSES, EDITABLE_STATUSES, type JwtUs
 // Prisma's own here rather than the shared ones. The shared status-list
 // constants above are plain string arrays at runtime, so `.includes()`
 // against a Prisma enum value still works.
-import { CRStatus, Role } from "@prisma/client";
+import { CRStatus } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
-import { NotificationsService } from "../notifications/notifications.service";
 import { assertTenantAccess, isCustomer, vendorScopeWhere } from "../common/tenant";
 import type { CommentDto, ConflictQueryDto, CreateChangeRequestDto, DecisionDto, ListQueryDto, UpdateChangeRequestDto } from "./dto";
 
@@ -23,10 +22,7 @@ const DETAIL_INCLUDE = {
 
 @Injectable()
 export class ChangeRequestsService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly notifications: NotificationsService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(user: JwtUser, dto: CreateChangeRequestDto) {
     if (dto.plannedEnd <= dto.plannedStart) {
@@ -83,21 +79,7 @@ export class ChangeRequestsService {
     if (cr.status !== CRStatus.DRAFT && cr.status !== CRStatus.REJECTED) {
       throw new BadRequestException(`Cannot submit a CR in ${cr.status} status`);
     }
-    const updated = await this.transition(cr.id, user.id, cr.status, CRStatus.SUBMITTED, "SUBMITTED");
-    const approvers = await this.prisma.user.findMany({
-      where: { role: Role.CUSTOMER },
-      select: { id: true },
-    });
-    await this.notifications.notifyMany(
-      approvers.map((a) => a.id),
-      {
-        type: "CR_SUBMITTED",
-        title: `New change request: ${cr.title}`,
-        body: `${cr.vendorOrgId} submitted "${cr.title}" for review.`,
-        link: `/change-requests/${cr.id}`,
-      },
-    );
-    return updated;
+    return this.transition(cr.id, user.id, cr.status, CRStatus.SUBMITTED, "SUBMITTED");
   }
 
   async startReview(user: JwtUser, id: string) {
@@ -114,14 +96,7 @@ export class ChangeRequestsService {
       throw new BadRequestException(`Cannot decide on a CR in ${cr.status} status`);
     }
     const toStatus = dto.decision === "APPROVE" ? CRStatus.APPROVED : CRStatus.REJECTED;
-    const updated = await this.transition(cr.id, user.id, cr.status, toStatus, "DECISION", dto.remark);
-    await this.notifications.notify(cr.submittedById, {
-      type: `CR_${toStatus}`,
-      title: `${cr.title} was ${toStatus.toLowerCase()}`,
-      body: dto.remark ?? `The customer has ${toStatus === CRStatus.APPROVED ? "approved" : "rejected"} this change request.`,
-      link: `/change-requests/${cr.id}`,
-    });
-    return updated;
+    return this.transition(cr.id, user.id, cr.status, toStatus, "DECISION", dto.remark);
   }
 
   async withdraw(user: JwtUser, id: string) {
@@ -159,18 +134,6 @@ export class ChangeRequestsService {
       include: { author: true },
     });
     await this.log(id, user.id, "COMMENT", null, null, dto.body.slice(0, 200));
-
-    const notifyTargets = isCustomer(user)
-      ? [cr.submittedById]
-      : (await this.prisma.user.findMany({ where: { role: Role.CUSTOMER }, select: { id: true } })).map(
-          (u) => u.id,
-        );
-    await this.notifications.notifyMany(notifyTargets, {
-      type: "CR_COMMENT",
-      title: `New comment on ${cr.title}`,
-      body: dto.body.slice(0, 200),
-      link: `/change-requests/${cr.id}`,
-    });
     return comment;
   }
 

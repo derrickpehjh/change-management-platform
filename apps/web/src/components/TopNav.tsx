@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { ROLE_LABELS, formatDateTime, crCode } from "@/lib/ui";
+import { ROLE_LABELS, crCode } from "@/lib/ui";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { Icon } from "./Icon";
 
@@ -14,7 +14,6 @@ export function TopNav() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user, isCustomer } = useCurrentUser();
-  const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -47,12 +46,6 @@ export function TopNav() {
     setSearchTerm("");
     router.push(`/change-requests/${id}`);
   }
-  const { data: notifications } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: api.notifications.list,
-    refetchInterval: 20_000,
-  });
-  const unread = notifications?.filter((n) => !n.read).length ?? 0;
   const total = crs?.length ?? 0;
 
   const navLink = (href: string, label: string, badge?: string) => {
@@ -78,14 +71,6 @@ export function TopNav() {
       </Link>
     );
   };
-
-  async function openNotifications() {
-    setNotifOpen((o) => !o);
-    if (!notifOpen && unread > 0) {
-      await api.notifications.markAllRead();
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    }
-  }
 
   async function signOut() {
     await api.logout();
@@ -170,34 +155,6 @@ export function TopNav() {
                       <p className="text-[10px] text-slate-400 font-code mt-0.5 truncate">Ref: {cr.vendorReference}</p>
                     )}
                   </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="relative">
-            <button
-              aria-label="Notifications"
-              onClick={openNotifications}
-              className="relative w-8 h-8 flex items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 transition-colors"
-            >
-              <Icon name="notifications" className="text-[19px]" />
-              {unread > 0 && <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full" />}
-            </button>
-            {notifOpen && (
-              <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
-                <p className="px-4 py-2.5 text-[11px] font-code uppercase tracking-wide text-slate-400 border-b border-slate-100">
-                  Notifications
-                </p>
-                {(!notifications || notifications.length === 0) && (
-                  <p className="px-4 py-6 text-sm text-slate-400 text-center">No notifications yet.</p>
-                )}
-                {notifications?.map((n) => (
-                  <div key={n.id} className="px-4 py-3 border-b border-slate-100 last:border-0">
-                    <p className="text-[13px] font-medium text-slate-900">{n.title}</p>
-                    <p className="text-[12px] text-slate-500 mt-0.5 line-clamp-2">{n.body}</p>
-                    <p className="text-[11px] text-slate-400 font-code mt-1">{formatDateTime(n.createdAt)}</p>
-                  </div>
                 ))}
               </div>
             )}

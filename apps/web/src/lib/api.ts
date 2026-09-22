@@ -77,12 +77,6 @@ export const api = {
       patch(`/users/${id}/assign`, dto),
   },
 
-  notifications: {
-    list: () => get<any[]>("/notifications"),
-    markRead: (id: string) => post(`/notifications/${id}/read`),
-    markAllRead: () => post("/notifications/read-all"),
-  },
-
   dashboard: () => get<any>("/dashboard"),
 
   changeRequests: {
