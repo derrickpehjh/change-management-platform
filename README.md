@@ -11,21 +11,50 @@ requirements.
 - `apps/api` — NestJS + Prisma + PostgreSQL
 - `packages/shared` — enums/types shared by both apps
 
-## Prerequisites
+## Running with Docker (recommended)
 
-- Node.js 20+
-- PostgreSQL 14+ running locally (this repo was set up against Homebrew's
-  `postgresql@16`; `docker/docker-compose.yml` is provided as an alternative
-  if you have Docker)
+The easiest way to run the full stack — no local Node.js or Postgres required.
 
-## First-time setup
+**Prerequisites:** Docker Desktop running.
+
+```bash
+# 1. Create your env file
+cp docker/.env.example docker/.env
+
+# 2. Build and start all four services (postgres, redis, api, web)
+docker compose -f docker/docker-compose.yml up --build
+
+# 3. In a separate terminal, seed dummy data (first time only)
+docker exec docker-api-1 npx prisma db seed
+```
+
+Open http://localhost:3001 — you'll see a login picker with all seeded users.
+
+> **Note:** If port 3001 is in use, edit `docker/docker-compose.yml` and change
+> `"3001:3000"` under the `web` service to any free port.
+
+**Subsequent runs** (no code changes):
+```bash
+docker compose -f docker/docker-compose.yml up
+```
+
+**Tear down:**
+```bash
+docker compose -f docker/docker-compose.yml down      # stop, keep DB data
+docker compose -f docker/docker-compose.yml down -v   # stop + wipe DB
+```
+
+---
+
+## Local development setup (without Docker)
+
+**Prerequisites:** Node.js 20+, PostgreSQL 14+ running locally.
 
 ```bash
 # 1. Install dependencies (npm workspaces — one install covers all apps)
 npm install
 
-# 2. Create the database (skip if you already have one — see docker-compose.yml
-#    for an equivalent Docker-based setup)
+# 2. Create the database
 createuser cmp --login --pwprompt   # password: cmp
 createdb cmp --owner=cmp
 
