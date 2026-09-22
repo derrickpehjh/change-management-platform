@@ -166,6 +166,9 @@ export function TopNav() {
                       <span className="text-[10px] text-slate-400">{cr.vendorOrg?.name}</span>
                     </div>
                     <p className="text-[13px] font-medium text-slate-900 truncate">{cr.title}</p>
+                    {cr.vendorReference && (
+                      <p className="text-[10px] text-slate-400 font-code mt-0.5 truncate">Ref: {cr.vendorReference}</p>
+                    )}
                   </button>
                 ))}
               </div>
