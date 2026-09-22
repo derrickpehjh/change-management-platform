@@ -15,7 +15,6 @@ RUN npm ci
 RUN npm run build --workspace=packages/shared
 RUN npm run prisma:generate --workspace=apps/api
 RUN npm run build --workspace=apps/api
-RUN ls -la /repo/apps/api/dist
 
 FROM node:20-slim AS runner
 WORKDIR /repo
@@ -38,4 +37,8 @@ EXPOSE 4000
 # already-existing tables. `db push` just diffs schema.prisma against the live
 # DB and is a no-op once they match. Switch back to `migrate deploy` once real
 # migration history is established for production.
-CMD ["sh", "-c", "npx prisma db push --skip-generate --accept-data-loss && node dist/main.js"]
+#
+# dist/src/main.js (not dist/main.js): Nest's compiler nests output under
+# dist/src/ here rather than flattening it — same quirk hit earlier with the
+# local dev build.
+CMD ["sh", "-c", "npx prisma db push --skip-generate --accept-data-loss && node dist/src/main.js"]
