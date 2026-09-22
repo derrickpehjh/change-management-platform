@@ -15,6 +15,7 @@ RUN npm ci
 RUN npm run build --workspace=packages/shared
 RUN npm run prisma:generate --workspace=apps/api
 RUN npm run build --workspace=apps/api
+RUN ls -la /repo/apps/api/dist
 
 FROM node:20-slim AS runner
 WORKDIR /repo
