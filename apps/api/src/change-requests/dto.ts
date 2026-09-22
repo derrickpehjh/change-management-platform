@@ -6,6 +6,7 @@ import {
   IsIn,
   IsOptional,
   IsString,
+  MaxLength,
   MinLength,
 } from "class-validator";
 import { CRStatus, RiskLevel } from "@cmp/shared";
@@ -36,6 +37,11 @@ export class CreateChangeRequestDto {
   @ArrayNotEmpty()
   @IsString({ each: true })
   systemAssetIds!: string[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  vendorReference?: string;
 }
 
 export class UpdateChangeRequestDto {
@@ -46,6 +52,7 @@ export class UpdateChangeRequestDto {
   @IsOptional() @IsDateString() plannedStart?: string;
   @IsOptional() @IsDateString() plannedEnd?: string;
   @IsOptional() @IsArray() @IsString({ each: true }) systemAssetIds?: string[];
+  @IsOptional() @IsString() @MaxLength(120) vendorReference?: string;
 }
 
 export class DecisionDto {

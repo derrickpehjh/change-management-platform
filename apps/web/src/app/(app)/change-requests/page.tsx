@@ -261,6 +261,9 @@ export default function ChangeRequestsHubPage() {
                           </div>
                           <span className="font-medium text-slate-900 mt-1">{cr.submittedBy.name}</span>
                           <span className="text-[11px] text-slate-400">{cr.vendorOrg.name}</span>
+                          {cr.vendorReference && (
+                            <span className="text-[10px] text-slate-400 font-code mt-0.5">Ref: {cr.vendorReference}</span>
+                          )}
                         </div>
                       </td>
                       <td className="py-4 px-4 align-top">

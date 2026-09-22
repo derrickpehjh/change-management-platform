@@ -81,6 +81,10 @@ model ChangeRequest {
   description   String
   riskLevel     RiskLevel
   rollbackPlan  String
+  // The vendor's own internal/external ticket number (e.g. their ServiceNow
+  // change ID) — purely a cross-reference, distinct from this platform's
+  // own CR-YYYY-NNN code (see crCode() on the frontend, derived from id).
+  vendorReference String?
   plannedStart  DateTime
   plannedEnd    DateTime
   status        CRStatus  @default(DRAFT)

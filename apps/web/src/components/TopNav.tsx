@@ -31,6 +31,7 @@ export function TopNav() {
           crCode(cr.id, cr.createdAt),
           cr.title,
           cr.vendorOrg?.name,
+          cr.vendorReference,
           ...(cr.systemAssets ?? []).map((a: any) => a.name),
         ]
           .filter(Boolean)

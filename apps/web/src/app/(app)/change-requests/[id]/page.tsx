@@ -81,6 +81,7 @@ export default function ChangeRequestDetailPage() {
           <h1 className="text-2xl font-headline font-bold text-slate-900 tracking-tight">{cr.title}</h1>
           <p className="text-xs text-slate-500 font-code mt-1">
             {cr.vendorOrg.name} · submitted by {cr.submittedBy.name} · {formatDateTime(cr.createdAt)}
+            {cr.vendorReference && <> · Vendor ref: {cr.vendorReference}</>}
           </p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
@@ -148,6 +149,7 @@ export default function ChangeRequestDetailPage() {
                   plannedStart: cr.plannedStart,
                   plannedEnd: cr.plannedEnd,
                   systemAssetIds: cr.systemAssets.map((a: any) => a.id),
+                  vendorReference: cr.vendorReference ?? undefined,
                 }}
                 excludeId={cr.id}
                 submitLabel="Save changes"

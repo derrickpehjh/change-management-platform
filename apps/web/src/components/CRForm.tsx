@@ -15,6 +15,7 @@ export interface CRFormValues {
   plannedStart: string;
   plannedEnd: string;
   systemAssetIds: string[];
+  vendorReference?: string;
 }
 
 export interface CRFormLiveState {
@@ -55,6 +56,7 @@ export function CRForm({
   const { data: assets } = useQuery({ queryKey: ["system-assets"], queryFn: api.systemAssets.list });
 
   const [title, setTitle] = useState(initial?.title ?? "");
+  const [vendorReference, setVendorReference] = useState(initial?.vendorReference ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [riskLevel, setRiskLevel] = useState<RiskLevel>(initial?.riskLevel ?? RiskLevel.MEDIUM);
   const [rollbackPlan, setRollbackPlan] = useState(initial?.rollbackPlan ?? "");
@@ -102,6 +104,7 @@ export function CRForm({
       plannedStart: new Date(plannedStart).toISOString(),
       plannedEnd: new Date(plannedEnd).toISOString(),
       systemAssetIds,
+      vendorReference: vendorReference.trim() || undefined,
     });
   }
 
@@ -139,6 +142,17 @@ export function CRForm({
               minLength={3}
             />
             <p className="text-[11px] text-slate-400">Adheres to HTX standard: [System] + [Action] + [Scope].</p>
+          </div>
+          <div className="space-y-1.5">
+            <label className={label}>Vendor Reference No.</label>
+            <input
+              className={`${input} font-code`}
+              value={vendorReference}
+              onChange={(e) => setVendorReference(e.target.value)}
+              placeholder="e.g., your own ticket/change ID (optional)"
+              maxLength={120}
+            />
+            <p className="text-[11px] text-slate-400">Your own internal or external tracking number, if you have one.</p>
           </div>
           <div className="space-y-1.5">
             <label className={label}>
