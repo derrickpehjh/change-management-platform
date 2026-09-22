@@ -7,6 +7,12 @@ function daysFromNow(d: number) {
 }
 
 async function main() {
+  const existing = await prisma.changeRequest.count();
+  if (existing > 0) {
+    console.log("Database already seeded — skipping.");
+    return;
+  }
+
   console.log("Seeding...");
 
   const [stEngineering, ncs, singtel] = await Promise.all([
