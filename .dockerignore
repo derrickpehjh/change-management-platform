@@ -1,0 +1,7 @@
+**/node_modules
+**/dist
+**/.next
+**/generated
+apps/api/uploads
+.git
+*.log

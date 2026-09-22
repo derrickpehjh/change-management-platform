@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrgType {
+  VENDOR
+  HTX
+}
+
+enum Role {
+  VENDOR
+  CUSTOMER
+}
+
+enum CRStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  SCHEDULED
+  IMPLEMENTED
+  CLOSED
+  WITHDRAWN
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model VendorOrg {
+  id             String          @id @default(cuid())
+  name           String          @unique
+  createdAt      DateTime        @default(now())
+  users          User[]
+  changeRequests ChangeRequest[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  gitlabId     String?   @unique
+  role         Role?
+  orgType      OrgType?
+  vendorOrgId  String?
+  vendorOrg    VendorOrg? @relation(fields: [vendorOrgId], references: [id])
+  createdAt    DateTime  @default(now())
+
+  submittedCRs   ChangeRequest[] @relation("submittedBy")
+  comments       Comment[]
+  auditLogs      CRAuditLog[]
+  notifications  Notification[]
+  attachments    Attachment[]
+}
+
+model SystemAsset {
+  id             String          @id @default(cuid())
+  name           String          @unique
+  description    String?
+  createdAt      DateTime        @default(now())
+  changeRequests ChangeRequest[] @relation("CRSystemAssets")
+}
+
+model ChangeRequest {
+  id            String    @id @default(cuid())
+  title         String
+  description   String
+  riskLevel     RiskLevel
+  rollbackPlan  String
+  plannedStart  DateTime
+  plannedEnd    DateTime
+  status        CRStatus  @default(DRAFT)
+
+  vendorOrgId   String
+  vendorOrg     VendorOrg @relation(fields: [vendorOrgId], references: [id])
+
+  submittedById String
+  submittedBy   User      @relation("submittedBy", fields: [submittedById], references: [id])
+
+  systemAssets  SystemAsset[] @relation("CRSystemAssets")
+  comments      Comment[]
+  attachments   Attachment[]
+  auditLogs     CRAuditLog[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([vendorOrgId])
+  @@index([status])
+  @@index([plannedStart, plannedEnd])
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  crId      String
+  cr        ChangeRequest @relation(fields: [crId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User          @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([crId])
+}
+
+model Attachment {
+  id           String        @id @default(cuid())
+  crId         String
+  cr           ChangeRequest @relation(fields: [crId], references: [id], onDelete: Cascade)
+  filename     String
+  storedPath   String
+  mimeType     String
+  sizeBytes    Int
+  uploadedById String
+  uploadedBy   User          @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime      @default(now())
+
+  @@index([crId])
+}
+
+model CRAuditLog {
+  id         String        @id @default(cuid())
+  crId       String
+  cr         ChangeRequest @relation(fields: [crId], references: [id], onDelete: Cascade)
+  actorId    String
+  actor      User          @relation(fields: [actorId], references: [id])
+  action     String
+  fromStatus CRStatus?
+  toStatus   CRStatus?
+  remark     String?
+  createdAt  DateTime      @default(now())
+
+  @@index([crId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  title     String
+  body      String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}
