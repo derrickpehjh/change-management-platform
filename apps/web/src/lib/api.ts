@@ -98,7 +98,7 @@ export const api = {
     decide: (id: string, decision: "APPROVE" | "REJECT", remark?: string) =>
       post<any>(`/change-requests/${id}/decision`, { decision, remark }),
     withdraw: (id: string) => post<any>(`/change-requests/${id}/withdraw`),
-    remove: (id: string) => del<void>(`/change-requests/${id}`),
+    remove: (id: string) => post<void>(`/change-requests/${id}/delete`),
     markImplemented: (id: string) => post<any>(`/change-requests/${id}/implemented`),
     close: (id: string) => post<any>(`/change-requests/${id}/close`),
     addComment: (id: string, body: string) => post<any>(`/change-requests/${id}/comments`, { body }),

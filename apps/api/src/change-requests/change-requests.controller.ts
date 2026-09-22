@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   NotFoundException,
@@ -98,7 +97,7 @@ export class ChangeRequestsController {
     return this.service.withdraw(user, id);
   }
 
-  @Delete(":id")
+  @Post(":id/delete")
   @Roles(Role.VENDOR)
   @HttpCode(204)
   remove(@CurrentUser() user: JwtUser, @Param("id") id: string) {
