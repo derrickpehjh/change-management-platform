@@ -22,7 +22,7 @@ export function CRHoverCard({ crs, className = "" }: { crs: any[]; className?: s
             <p className="text-[12.5px] font-semibold text-slate-900 leading-snug line-clamp-2">{cr.title}</p>
             <p className="text-[11px] text-slate-500">{cr.vendorOrg.name}</p>
             {cr.vendorReference && (
-              <p className="text-[11px] font-code text-slate-400">Ref: {cr.vendorReference}</p>
+              <p className="text-[11px] font-code font-semibold text-primary">Ref: {cr.vendorReference}</p>
             )}
             <p className="text-[11px] font-code text-slate-400">
               {formatShort(cr.plannedStart)} – {formatShort(cr.plannedEnd)}

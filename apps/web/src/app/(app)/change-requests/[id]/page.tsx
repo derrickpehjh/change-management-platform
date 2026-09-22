@@ -73,6 +73,9 @@ export default function ChangeRequestDetailPage() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="font-code text-[12px] font-semibold text-primary">{crCode(cr.id, cr.createdAt)}</span>
+            {cr.vendorReference && (
+              <span className="font-code text-[12px] font-semibold text-primary">· Ref: {cr.vendorReference}</span>
+            )}
             <span className={`px-2 py-0.5 rounded text-[11px] font-medium border ${risk.chip}`}>{risk.label} Risk</span>
             <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${STATUS_BADGE[cr.status as CRStatus]}`}>
               {cr.status.replaceAll("_", " ")}
@@ -81,7 +84,6 @@ export default function ChangeRequestDetailPage() {
           <h1 className="text-2xl font-headline font-bold text-slate-900 tracking-tight">{cr.title}</h1>
           <p className="text-xs text-slate-500 font-code mt-1">
             {cr.vendorOrg.name} · submitted by {cr.submittedBy.name} · {formatDateTime(cr.createdAt)}
-            {cr.vendorReference && <> · Vendor ref: {cr.vendorReference}</>}
           </p>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">

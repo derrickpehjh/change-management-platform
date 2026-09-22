@@ -62,6 +62,9 @@ export function CRDrawer({ id, onClose }: { id: string; onClose: () => void }) {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="font-code text-[12px] font-semibold text-primary">{crCode(cr.id, cr.createdAt)}</span>
+            {cr.vendorReference && (
+              <span className="font-code text-[12px] font-semibold text-primary">· Ref: {cr.vendorReference}</span>
+            )}
             <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${risk.chip}`}>{risk.label} Risk</span>
           </div>
           <h2 className="font-semibold text-slate-900 text-[14px] leading-snug line-clamp-2">{cr.title}</h2>
@@ -96,12 +99,6 @@ export function CRDrawer({ id, onClose }: { id: string; onClose: () => void }) {
             <span className="text-slate-400 text-[10px] uppercase font-medium block">Submitter</span>
             <span className="font-medium text-slate-900 mt-0.5 block truncate">{cr.submittedBy.name}</span>
           </div>
-          {cr.vendorReference && (
-            <div className="p-2.5 rounded-md bg-slate-50 border border-slate-100 col-span-2">
-              <span className="text-slate-400 text-[10px] uppercase font-medium block">Vendor Reference</span>
-              <span className="font-code text-[12px] font-medium text-slate-900 mt-0.5 block truncate">{cr.vendorReference}</span>
-            </div>
-          )}
           <div className="p-2.5 rounded-md bg-slate-50 border border-slate-100 col-span-2 flex items-center justify-between">
             <div>
               <span className="text-slate-400 text-[10px] uppercase font-medium block">Planned Window</span>
