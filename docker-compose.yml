@@ -74,7 +74,7 @@ services:
         condition: service_completed_successfully
     restart: on-failure
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:4000/health/ready || exit 1"]
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:4000/health/ready', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))\""]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -82,7 +82,7 @@ services:
 
   seed:
     image: derrickpehjh/cmp-api:latest
-    command: npm run seed
+    command: npx ts-node prisma/seed.ts
     environment:
       DATABASE_URL: postgresql://cmp:${POSTGRES_PASSWORD:-cmp}@postgres:5432/cmp?schema=public
     depends_on:
