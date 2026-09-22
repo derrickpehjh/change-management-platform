@@ -3,15 +3,19 @@ import { CRStatus, RiskLevel, STATUS_LABELS } from "@cmp/shared";
 export { STATUS_LABELS };
 
 export const STATUS_BADGE: Record<CRStatus, string> = {
-  [CRStatus.DRAFT]: "bg-slate-100 text-slate-600",
-  [CRStatus.SUBMITTED]: "bg-blue-50 text-blue-700",
+  // Not yet submitted
+  [CRStatus.DRAFT]:        "bg-slate-100 text-slate-500",
+  // In the approval pipeline
+  [CRStatus.SUBMITTED]:    "bg-blue-50 text-blue-700",
   [CRStatus.UNDER_REVIEW]: "bg-indigo-50 text-indigo-700",
-  [CRStatus.APPROVED]: "bg-emerald-50 text-emerald-700",
-  [CRStatus.REJECTED]: "bg-rose-50 text-rose-600",
-  [CRStatus.SCHEDULED]: "bg-amber-50 text-amber-700",
-  [CRStatus.IMPLEMENTED]: "bg-teal-50 text-teal-700",
-  [CRStatus.CLOSED]: "bg-slate-100 text-slate-500",
-  [CRStatus.WITHDRAWN]: "bg-slate-100 text-slate-400",
+  [CRStatus.APPROVED]:     "bg-emerald-50 text-emerald-700",
+  [CRStatus.SCHEDULED]:    "bg-amber-50 text-amber-700",
+  [CRStatus.IMPLEMENTED]:  "bg-teal-50 text-teal-700",
+  // Terminal — completed
+  [CRStatus.CLOSED]:       "bg-slate-700 text-white",
+  // Terminal — negative / voided
+  [CRStatus.REJECTED]:     "bg-rose-100 text-rose-700",
+  [CRStatus.WITHDRAWN]:    "bg-slate-200 text-slate-500",
 };
 
 export const RISK_BADGE: Record<RiskLevel, { label: string; chip: string; dot: string }> = {

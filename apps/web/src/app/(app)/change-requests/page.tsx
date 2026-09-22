@@ -7,7 +7,7 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Icon } from "@/components/Icon";
 import { CRDrawer } from "@/components/CRDrawer";
-import { formatDate, RISK_BADGE, STATUS_BADGE, crCode } from "@/lib/ui";
+import { formatDate, RISK_BADGE, STATUS_BADGE, STATUS_LABELS, crCode } from "@/lib/ui";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { CRStatus, RiskLevel } from "@cmp/shared";
 
@@ -295,14 +295,14 @@ export default function ChangeRequestsHubPage() {
                             <Icon name="warning" className="text-[13px]" /> Overlap
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-medium">
-                            <Icon name="check_circle" className="text-[14px]" /> Clean
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <Icon name="check_circle" className="text-[13px]" /> Clear
                           </span>
                         )}
                       </td>
                       <td className="py-4 px-3 align-top text-center">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${STATUS_BADGE[cr.status as CRStatus]}`}>
-                          {cr.status.replaceAll("_", " ")}
+                          {STATUS_LABELS[cr.status as CRStatus]}
                         </span>
                       </td>
                       <td className="py-4 px-5 align-top text-right">
