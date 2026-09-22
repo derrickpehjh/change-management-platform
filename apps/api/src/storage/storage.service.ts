@@ -1,16 +1,25 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, ServiceUnavailableException, Logger } from "@nestjs/common";
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { extname } from "path";
 
 @Injectable()
 export class StorageService {
-  private readonly uploadClient: S3Client;
-  private readonly presignClient: S3Client;
+  private readonly logger = new Logger(StorageService.name);
+  private readonly uploadClient: S3Client | null;
+  private readonly presignClient: S3Client | null;
   private readonly bucket: string;
 
   constructor() {
     this.bucket = process.env.S3_BUCKET ?? "attachments";
+
+    if (!process.env.S3_ENDPOINT) {
+      this.logger.warn("S3_ENDPOINT not set — file attachments are disabled");
+      this.uploadClient = null;
+      this.presignClient = null;
+      return;
+    }
+
     const region = process.env.S3_REGION ?? "us-east-1";
     const credentials = {
       accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
@@ -37,6 +46,7 @@ export class StorageService {
   }
 
   async upload(file: Express.Multer.File): Promise<string> {
+    if (!this.uploadClient) throw new ServiceUnavailableException("File storage is not configured");
     const key = `${Date.now()}-${Math.random().toString(36).slice(2)}${extname(file.originalname)}`;
     await this.uploadClient.send(
       new PutObjectCommand({
@@ -50,6 +60,7 @@ export class StorageService {
   }
 
   presignedDownloadUrl(key: string, expiresIn = 3600): Promise<string> {
+    if (!this.presignClient) throw new ServiceUnavailableException("File storage is not configured");
     return getSignedUrl(
       this.presignClient,
       new GetObjectCommand({ Bucket: this.bucket, Key: key }),
