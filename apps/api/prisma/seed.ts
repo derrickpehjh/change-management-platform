@@ -58,6 +58,7 @@ async function main() {
     plannedEnd: Date;
     systemAssetIds: string[];
     rejectRemark?: string;
+    vendorReference?: string;
   }) {
     const cr = await prisma.changeRequest.create({
       data: {
@@ -67,6 +68,7 @@ async function main() {
         submittedById: opts.submittedById,
         riskLevel: opts.riskLevel,
         rollbackPlan: "Revert to prior configuration snapshot taken immediately before the change window.",
+        vendorReference: opts.vendorReference,
         status: opts.status,
         plannedStart: opts.plannedStart,
         plannedEnd: opts.plannedEnd,
@@ -111,6 +113,7 @@ async function main() {
     plannedStart: daysFromNow(10),
     plannedEnd: daysFromNow(10.2),
     systemAssetIds: [coreSwitch.id],
+    vendorReference: "STE-TICKET-4471",
   });
 
   await makeCR({
@@ -149,6 +152,7 @@ async function main() {
     plannedStart: daysFromNow(3),
     plannedEnd: daysFromNow(3.3),
     systemAssetIds: [coreSwitch.id],
+    vendorReference: "NCS-CHG-20261003-01",
   });
   await makeCR({
     title: "Switch A: QoS policy rollout",
@@ -160,6 +164,7 @@ async function main() {
     plannedStart: daysFromNow(3.1),
     plannedEnd: daysFromNow(3.4),
     systemAssetIds: [coreSwitch.id],
+    vendorReference: "NCS-CHG-20261003-02",
   });
 
   await makeCR({
