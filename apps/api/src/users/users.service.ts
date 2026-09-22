@@ -33,7 +33,11 @@ export class UsersService {
   }
 
   pending() {
-    return this.prisma.user.findMany({ where: { role: null }, orderBy: { createdAt: "asc" } });
+    return this.prisma.user.findMany({
+      where: { role: null },
+      include: { requestedVendorOrg: true },
+      orderBy: { createdAt: "asc" },
+    });
   }
 
   /** Customer-only: assign org + role to a new (or existing) user — the only path that can
@@ -52,6 +56,7 @@ export class UsersService {
         role: dto.role as unknown as PrismaRole,
         orgType: dto.orgType as unknown as PrismaOrgType,
         vendorOrgId: dto.orgType === OrgType.VENDOR ? dto.vendorOrgId : null,
+        requestedVendorOrgId: null,
       },
     });
   }

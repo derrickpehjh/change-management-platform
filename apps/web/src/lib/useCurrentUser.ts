@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import type { JwtUser } from "@cmp/shared";
 import { api, ApiError } from "./api";
 
+type MeUser = JwtUser & { requestedVendorOrgId: string | null; requestedVendorOrgName: string | null };
+
 export function useCurrentUser() {
-  const query = useQuery<{ user: JwtUser }, ApiError>({
+  const query = useQuery<{ user: MeUser }, ApiError>({
     queryKey: ["me"],
     queryFn: api.me,
     retry: false,

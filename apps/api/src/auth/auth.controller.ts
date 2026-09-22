@@ -12,13 +12,20 @@ import {
 import { AuthGuard } from "@nestjs/passport";
 import type { Request, Response } from "express";
 import { IsString } from "class-validator";
+import type { JwtUser } from "@cmp/shared";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
+import { CurrentUser } from "../common/decorators/current-user.decorator";
 
 class DevLoginDto {
   @IsString()
   userId!: string;
+}
+
+class RequestVendorDto {
+  @IsString()
+  vendorOrgId!: string;
 }
 
 function authMode() {
@@ -96,8 +103,16 @@ export class AuthController {
 
   @Get("me")
   @UseGuards(JwtAuthGuard)
-  me(@Req() req: Request) {
-    return { user: req.user };
+  async me(@CurrentUser() user: JwtUser) {
+    return { user: await this.authService.getFreshUser(user.id) };
+  }
+
+  /** Self-service, pending users only: declare which vendor company you represent.
+   *  Doesn't grant access — a Customer admin still approves it from Admin > Users. */
+  @Post("request-vendor")
+  @UseGuards(JwtAuthGuard)
+  async requestVendor(@CurrentUser() user: JwtUser, @Body() dto: RequestVendorDto) {
+    return this.authService.requestVendor(user.id, dto.vendorOrgId);
   }
 
   @Post("logout")

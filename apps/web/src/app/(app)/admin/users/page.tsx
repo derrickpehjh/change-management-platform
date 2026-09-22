@@ -60,9 +60,10 @@ export default function UsersAdminPage() {
 }
 
 function PendingRow({ user, vendorOrgs, onAssigned }: { user: any; vendorOrgs: any[]; onAssigned: () => void }) {
+  const requestedVendorOrgId: string | null = user.requestedVendorOrgId ?? null;
   const [orgType, setOrgType] = useState<OrgType>(OrgType.VENDOR);
   const [role, setRole] = useState<Role>(Role.VENDOR);
-  const [vendorOrgId, setVendorOrgId] = useState(vendorOrgs[0]?.id ?? "");
+  const [vendorOrgId, setVendorOrgId] = useState(requestedVendorOrgId ?? vendorOrgs[0]?.id ?? "");
   const [saving, setSaving] = useState(false);
 
   function setOrg(next: OrgType) {
@@ -85,6 +86,11 @@ function PendingRow({ user, vendorOrgs, onAssigned }: { user: any; vendorOrgs: a
       <div className="flex-1 min-w-[160px]">
         <p className="text-sm font-medium text-slate-900">{user.name}</p>
         <p className="text-xs text-slate-400 font-code">{user.email}</p>
+        {user.requestedVendorOrg && (
+          <p className="text-[11px] text-amber-700 mt-0.5">
+            Requested: <span className="font-medium">{user.requestedVendorOrg.name}</span>
+          </p>
+        )}
       </div>
       <select value={orgType} onChange={(e) => setOrg(e.target.value as OrgType)} className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs">
         <option value={OrgType.VENDOR}>Vendor</option>

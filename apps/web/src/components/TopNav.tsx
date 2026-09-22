@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { ROLE_LABELS, formatDateTime } from "@/lib/ui";
+import { ROLE_LABELS, formatDateTime, crCode } from "@/lib/ui";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { Icon } from "./Icon";
 
@@ -16,8 +16,36 @@ export function TopNav() {
   const { user, isCustomer } = useCurrentUser();
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
 
   const { data: crs } = useQuery({ queryKey: ["crs", "", ""], queryFn: () => api.changeRequests.list() });
+
+  const searchResults = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return [];
+    return (crs ?? [])
+      .filter((cr: any) => {
+        const haystack = [
+          crCode(cr.id, cr.createdAt),
+          cr.title,
+          cr.vendorOrg?.name,
+          ...(cr.systemAssets ?? []).map((a: any) => a.name),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(term);
+      })
+      .slice(0, 8);
+  }, [crs, searchTerm]);
+
+  function goToResult(id: string) {
+    setSearchOpen(false);
+    setSearchTerm("");
+    router.push(`/change-requests/${id}`);
+  }
   const { data: notifications } = useQuery({
     queryKey: ["notifications"],
     queryFn: api.notifications.list,
@@ -99,16 +127,48 @@ export function TopNav() {
         </nav>
 
         <div className="flex items-center gap-3 shrink-0 ml-auto">
-          <div className="hidden sm:flex items-center relative w-56">
+          <div className="hidden sm:flex items-center relative w-56" ref={searchBoxRef}>
             <Icon name="search" className="absolute left-2.5 text-slate-400 text-[17px]" />
             <input
               className="w-full h-8 pl-8 pr-3 bg-slate-50 border border-slate-200 rounded-md text-[12px] placeholder:text-slate-400 focus:outline-none focus:border-slate-400 focus:bg-white transition-colors"
               placeholder="Quick search CR#, systems..."
               type="text"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setSearchOpen(true);
+              }}
+              onFocus={() => setSearchOpen(true)}
+              onBlur={() => setTimeout(() => setSearchOpen(false), 120)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") router.push("/change-requests");
+                if (e.key === "Enter") {
+                  if (searchResults[0]) goToResult(searchResults[0].id);
+                  else if (searchTerm.trim()) router.push("/change-requests");
+                }
+                if (e.key === "Escape") setSearchOpen(false);
               }}
             />
+            {searchOpen && searchTerm.trim() && (
+              <div className="absolute top-full left-0 mt-1 w-80 max-h-96 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg z-10">
+                {searchResults.length === 0 && (
+                  <p className="px-4 py-4 text-[12px] text-slate-400 text-center">No matching change requests.</p>
+                )}
+                {searchResults.map((cr: any) => (
+                  <button
+                    key={cr.id}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => goToResult(cr.id)}
+                    className="w-full text-left px-4 py-2.5 border-b border-slate-100 last:border-0 hover:bg-slate-50"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-code text-slate-400">{crCode(cr.id, cr.createdAt)}</span>
+                      <span className="text-[10px] text-slate-400">{cr.vendorOrg?.name}</span>
+                    </div>
+                    <p className="text-[13px] font-medium text-slate-900 truncate">{cr.title}</p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="relative">

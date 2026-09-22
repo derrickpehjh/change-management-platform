@@ -39,20 +39,26 @@ model VendorOrg {
   id             String          @id @default(cuid())
   name           String          @unique
   createdAt      DateTime        @default(now())
-  users          User[]
+  users          User[]          @relation("vendorOrgUsers")
+  requestedBy    User[]          @relation("requestedVendorOrgUsers")
   changeRequests ChangeRequest[]
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  name         String
-  gitlabId     String?   @unique
-  role         Role?
-  orgType      OrgType?
-  vendorOrgId  String?
-  vendorOrg    VendorOrg? @relation(fields: [vendorOrgId], references: [id])
-  createdAt    DateTime  @default(now())
+  id                  String     @id @default(cuid())
+  email               String     @unique
+  name                String
+  gitlabId            String?    @unique
+  role                Role?
+  orgType             OrgType?
+  vendorOrgId         String?
+  vendorOrg           VendorOrg? @relation("vendorOrgUsers", fields: [vendorOrgId], references: [id])
+  // Self-declared on first login, before a Customer admin approves it — see
+  // AuthService.requestVendor(). Distinct from vendorOrgId, which is only
+  // ever set once an admin actually grants access.
+  requestedVendorOrgId String?
+  requestedVendorOrg    VendorOrg? @relation("requestedVendorOrgUsers", fields: [requestedVendorOrgId], references: [id])
+  createdAt           DateTime   @default(now())
 
   submittedCRs   ChangeRequest[] @relation("submittedBy")
   comments       Comment[]

@@ -50,9 +50,14 @@ export const api = {
       { id: string; name: string; email: string; role: string | null; orgType: string | null; vendorOrgName: string | null }[]
     >("/auth/dev-users"),
   devLogin: (userId: string) => post<{ user: unknown }>("/auth/dev-login", { userId }),
-  me: () => get<{ user: import("@cmp/shared").JwtUser }>("/auth/me"),
+  me: () =>
+    get<{
+      user: import("@cmp/shared").JwtUser & { requestedVendorOrgId: string | null; requestedVendorOrgName: string | null };
+    }>("/auth/me"),
   logout: () => post("/auth/logout"),
   gitlabLoginUrl: () => `${API_URL}/auth/gitlab`,
+  requestVendor: (vendorOrgId: string) =>
+    post<{ requestedVendorOrgId: string; requestedVendorOrgName: string }>("/auth/request-vendor", { vendorOrgId }),
 
   vendorOrgs: {
     list: () => get<{ id: string; name: string }[]>("/vendor-orgs"),

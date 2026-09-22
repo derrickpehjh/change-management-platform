@@ -13,16 +13,20 @@ class CreateVendorOrgDto {
 }
 
 @Controller("vendor-orgs")
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 export class VendorOrgsController {
   constructor(private readonly service: VendorOrgsService) {}
 
+  // Intentionally JwtAuthGuard-only (no RolesGuard): a pending user with no
+  // role yet still needs to list vendor orgs to self-declare which one they
+  // represent (see AuthController.requestVendor).
   @Get()
   list() {
     return this.service.list();
   }
 
   @Post()
+  @UseGuards(RolesGuard)
   @Roles(Role.CUSTOMER)
   create(@Body() dto: CreateVendorOrgDto) {
     return this.service.create(dto.name);
