@@ -108,6 +108,15 @@ export class ChangeRequestsService {
     return this.transition(cr.id, user.id, cr.status, CRStatus.WITHDRAWN, "WITHDRAWN");
   }
 
+  async remove(user: JwtUser, id: string) {
+    const cr = await this.getOrThrow(id);
+    assertTenantAccess(user, cr.vendorOrgId);
+    if (cr.status !== CRStatus.WITHDRAWN) {
+      throw new BadRequestException("Only withdrawn change requests can be deleted");
+    }
+    await this.prisma.changeRequest.delete({ where: { id } });
+  }
+
   async markImplemented(user: JwtUser, id: string) {
     const cr = await this.getOrThrow(id);
     assertTenantAccess(user, cr.vendorOrgId);

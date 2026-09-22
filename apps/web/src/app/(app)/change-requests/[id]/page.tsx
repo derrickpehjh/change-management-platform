@@ -47,6 +47,7 @@ export default function ChangeRequestDetailPage() {
   const isOwnVendor = !isCustomer && user?.vendorOrgId === cr.vendorOrgId;
   const canEdit = isOwnVendor && (EDITABLE_STATUSES as readonly string[]).includes(cr.status);
   const canWithdraw = isOwnVendor && (WITHDRAWABLE_STATUSES as readonly string[]).includes(cr.status);
+  const canDelete = isOwnVendor && cr.status === CRStatus.WITHDRAWN;
   const canDecide = isCustomer && (cr.status === CRStatus.SUBMITTED || cr.status === CRStatus.UNDER_REVIEW);
   const canImplement = (isCustomer || isOwnVendor) && (cr.status === CRStatus.APPROVED || cr.status === CRStatus.SCHEDULED);
   const canClose = isCustomer && cr.status === CRStatus.IMPLEMENTED;
@@ -105,6 +106,20 @@ export default function ChangeRequestDetailPage() {
           {canWithdraw && (
             <button onClick={() => runAction.mutate(() => api.changeRequests.withdraw(cr.id))} className="btn-danger">
               Withdraw
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={() => {
+                if (confirm("Permanently delete this withdrawn CR? This cannot be undone.")) {
+                  runAction.mutate(() => api.changeRequests.remove(cr.id), {
+                    onSuccess: () => router.push("/change-requests"),
+                  });
+                }
+              }}
+              className="btn-danger"
+            >
+              Delete
             </button>
           )}
           {canImplement && (
