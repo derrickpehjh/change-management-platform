@@ -283,7 +283,7 @@ export default function ChangeRequestsHubPage() {
                       <td className="py-4 px-3 align-top text-center">
                         <span className="inline-flex items-center gap-1.5">
                           <span className={`w-2 h-2 rounded-full shrink-0 ${risk.dot}`} />
-                          <span className={`text-[12px] font-semibold ${cr.riskLevel === "HIGH" ? "text-rose-600" : cr.riskLevel === "MEDIUM" ? "text-amber-600" : "text-emerald-600"}`}>{risk.label}</span>
+                          <span className={`text-[12px] font-semibold uppercase tracking-wide ${cr.riskLevel === "HIGH" ? "text-rose-600" : cr.riskLevel === "MEDIUM" ? "text-amber-600" : "text-emerald-600"}`}>{risk.label}</span>
                         </span>
                       </td>
                       <td className="py-4 px-4 align-top">
@@ -304,7 +304,7 @@ export default function ChangeRequestsHubPage() {
                         )}
                       </td>
                       <td className="py-4 px-3 align-top text-center">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${STATUS_BADGE[cr.status as CRStatus]}`}>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide ${STATUS_BADGE[cr.status as CRStatus]}`}>
                           {STATUS_LABELS[cr.status as CRStatus]}
                         </span>
                       </td>
