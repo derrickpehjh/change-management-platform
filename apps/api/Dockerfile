@@ -23,6 +23,11 @@ COPY --from=builder /repo/apps/api ./apps/api
 WORKDIR /repo/apps/api
 EXPOSE 4000
 
-# Applies any pending Prisma migrations on boot, then starts the API. Safe to
-# run on every deploy — a no-op when the schema is already up to date.
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+# `db push` (not `migrate deploy`) on purpose: the POC's Supabase schema was
+# applied directly via a SQL migration outside Prisma's own migration history,
+# so there's no _prisma_migrations row for `migrate deploy` to reconcile
+# against — it would try to re-run the initial migration and fail on
+# already-existing tables. `db push` just diffs schema.prisma against the live
+# DB and is a no-op once they match. Switch back to `migrate deploy` once real
+# migration history is established for production.
+CMD ["sh", "-c", "npx prisma db push --skip-generate --accept-data-loss && node dist/main.js"]
