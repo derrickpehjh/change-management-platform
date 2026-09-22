@@ -7,10 +7,14 @@ WORKDIR /repo
 COPY . .
 RUN npm ci
 RUN npm run build --workspace=packages/shared
-# Bake /api as the API base URL so the browser always talks to this app's own
-# origin. NEXT_PUBLIC_* vars are inlined at next build time, not read at
-# runtime, so this must be set here rather than via a pod env var.
+# Both vars are consumed by next build, not next start:
+# - NEXT_PUBLIC_API_URL is inlined into the JS bundle by the compiler
+# - API_PROXY_ORIGIN is written into routes-manifest.json as the rewrite dest
+# Pass --build-arg API_PROXY_ORIGIN=<url> to override the default (e.g. for K8s
+# where the API service has a different internal hostname).
+ARG API_PROXY_ORIGIN=http://api:4000
 ENV NEXT_PUBLIC_API_URL=/api
+ENV API_PROXY_ORIGIN=$API_PROXY_ORIGIN
 RUN npm run build --workspace=apps/web
 
 FROM node:20-slim AS runner
