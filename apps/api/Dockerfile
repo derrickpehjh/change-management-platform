@@ -5,6 +5,11 @@
 FROM node:20-slim AS builder
 WORKDIR /repo
 
+# Prisma's engines need OpenSSL to detect the right libssl target — without
+# it, `prisma db push`/`generate` fail version detection and retry forever
+# rather than erroring out cleanly.
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 COPY . .
 RUN npm ci
 RUN npm run build --workspace=packages/shared
@@ -14,6 +19,8 @@ RUN npm run build --workspace=apps/api
 FROM node:20-slim AS runner
 WORKDIR /repo
 ENV NODE_ENV=production
+
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /repo/node_modules ./node_modules
 COPY --from=builder /repo/package.json ./package.json
