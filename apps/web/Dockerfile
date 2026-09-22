@@ -30,4 +30,5 @@ COPY --from=builder /repo/apps/web ./apps/web
 WORKDIR /repo/apps/web
 EXPOSE 3000
 
+USER node
 CMD ["npm", "run", "start"]

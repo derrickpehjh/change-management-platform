@@ -1,5 +1,3 @@
-version: "3.9"
-
 # Full-stack compose: postgres + minio + api + web.
 # Run from the monorepo root:
 #   docker compose -f docker/docker-compose.yml up --build

@@ -31,4 +31,5 @@ WORKDIR /repo/apps/api
 EXPOSE 4000
 
 RUN chmod +x entrypoint.sh
+USER node
 CMD ["./entrypoint.sh"]
