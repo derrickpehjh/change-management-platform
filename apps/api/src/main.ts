@@ -7,6 +7,8 @@ import { AppModule } from "./app.module";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableShutdownHooks();
+
   app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
@@ -17,7 +19,8 @@ async function bootstrap() {
   });
 
   const port = process.env.PORT ?? 4000;
-  await app.listen(port);
+  const server = await app.listen(port);
+  server.keepAliveTimeout = 65_000;
   // eslint-disable-next-line no-console
   console.log(`[api] listening on :${port} (auth mode: ${process.env.AUTH_MODE ?? "mock"})`);
 }

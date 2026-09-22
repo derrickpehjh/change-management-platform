@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { validateEnv } from "./config/env.validation";
 import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
 import { VendorOrgsModule } from "./vendor-orgs/vendor-orgs.module";
@@ -12,7 +13,7 @@ import { HealthController } from "./health/health.controller";
 @Module({
   controllers: [HealthController],
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     PrismaModule,
     AuthModule,
     VendorOrgsModule,
