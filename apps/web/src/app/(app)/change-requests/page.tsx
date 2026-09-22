@@ -281,7 +281,10 @@ export default function ChangeRequestsHubPage() {
                         </div>
                       </td>
                       <td className="py-4 px-3 align-top text-center">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${risk.chip}`}>{risk.label}</span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${risk.dot}`} />
+                          <span className={`text-[12px] font-semibold ${cr.riskLevel === "HIGH" ? "text-rose-600" : cr.riskLevel === "MEDIUM" ? "text-amber-600" : "text-emerald-600"}`}>{risk.label}</span>
+                        </span>
                       </td>
                       <td className="py-4 px-4 align-top">
                         <div className="flex flex-col leading-tight">
@@ -291,12 +294,12 @@ export default function ChangeRequestsHubPage() {
                       </td>
                       <td className="py-4 px-3 align-top">
                         {hasConflict ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                            <Icon name="warning" className="text-[13px]" /> Overlap
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                            <Icon name="warning" className="text-[12px]" /> {conflicts.length} Overlap{conflicts.length > 1 ? "s" : ""}
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <Icon name="check_circle" className="text-[13px]" /> Clear
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium text-slate-400">
+                            <Icon name="check_circle" className="text-[12px] text-emerald-500" /> Clear
                           </span>
                         )}
                       </td>
