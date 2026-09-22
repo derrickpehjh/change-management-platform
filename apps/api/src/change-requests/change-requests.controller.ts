@@ -13,9 +13,7 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { diskStorage } from "multer";
-import { extname, join } from "path";
-import { existsSync, mkdirSync } from "fs";
+import { memoryStorage } from "multer";
 import type { Response } from "express";
 import { Role, type JwtUser } from "@cmp/shared";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
@@ -25,10 +23,8 @@ import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { ChangeRequestsService } from "./change-requests.service";
 import { CommentDto, ConflictQueryDto, CreateChangeRequestDto, DecisionDto, ListQueryDto, UpdateChangeRequestDto } from "./dto";
 import { PrismaService } from "../prisma/prisma.service";
+import { StorageService } from "../storage/storage.service";
 import { assertTenantAccess } from "../common/tenant";
-
-const uploadsDir = process.env.UPLOADS_DIR ?? "./uploads";
-if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
 
 @Controller("change-requests")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -36,6 +32,7 @@ export class ChangeRequestsController {
   constructor(
     private readonly service: ChangeRequestsService,
     private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
   ) {}
 
   @Post()
@@ -118,15 +115,18 @@ export class ChangeRequestsController {
   @Post(":id/attachments")
   @UseInterceptors(
     FileInterceptor("file", {
-      storage: diskStorage({
-        destination: uploadsDir,
-        filename: (_req, file, cb) => cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${extname(file.originalname)}`),
-      }),
+      storage: memoryStorage(),
       limits: { fileSize: 15 * 1024 * 1024 },
     }),
   )
-  addAttachment(@CurrentUser() user: JwtUser, @Param("id") id: string, @UploadedFile() file: Express.Multer.File) {
-    return this.service.addAttachment(user, id, file);
+  async addAttachment(@CurrentUser() user: JwtUser, @Param("id") id: string, @UploadedFile() file: Express.Multer.File) {
+    const key = await this.storage.upload(file);
+    return this.service.addAttachment(user, id, {
+      originalname: file.originalname,
+      storedPath: key,
+      mimetype: file.mimetype,
+      size: file.size,
+    });
   }
 
   @Get(":id/attachments/:attachmentId/download")
@@ -142,6 +142,7 @@ export class ChangeRequestsController {
     });
     if (!attachment || attachment.crId !== id) throw new NotFoundException("Attachment not found");
     assertTenantAccess(user, attachment.cr.vendorOrgId);
-    res.download(join(process.cwd(), attachment.storedPath), attachment.filename);
+    const url = await this.storage.presignedDownloadUrl(attachment.storedPath);
+    res.redirect(url);
   }
 }

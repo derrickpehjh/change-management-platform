@@ -177,7 +177,7 @@ export class ChangeRequestsService {
   async addAttachment(
     user: JwtUser,
     id: string,
-    file: { originalname: string; path: string; mimetype: string; size: number },
+    file: { originalname: string; storedPath: string; mimetype: string; size: number },
   ) {
     const cr = await this.getOrThrow(id);
     assertTenantAccess(user, cr.vendorOrgId);
@@ -185,7 +185,7 @@ export class ChangeRequestsService {
       data: {
         crId: id,
         filename: file.originalname,
-        storedPath: file.path,
+        storedPath: file.storedPath,
         mimeType: file.mimetype,
         sizeBytes: file.size,
         uploadedById: user.id,

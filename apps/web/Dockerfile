@@ -7,6 +7,10 @@ WORKDIR /repo
 COPY . .
 RUN npm ci
 RUN npm run build --workspace=packages/shared
+# Bake /api as the API base URL so the browser always talks to this app's own
+# origin. NEXT_PUBLIC_* vars are inlined at next build time, not read at
+# runtime, so this must be set here rather than via a pod env var.
+ENV NEXT_PUBLIC_API_URL=/api
 RUN npm run build --workspace=apps/web
 
 FROM node:20-slim AS runner
