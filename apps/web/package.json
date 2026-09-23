@@ -28,5 +28,6 @@
     "type": "git",
     "url": "git+https://github.com/derrickpehjh/change-management-platform.git",
     "directory": "apps/web"
-  }
+  },
+  "license": "MIT"
 }

@@ -22,5 +22,6 @@
     "type": "git",
     "url": "git+https://github.com/derrickpehjh/change-management-platform.git"
   },
-  "description": "Change request submission, approval, and shared maintenance calendar for Vendors and HTX"
+  "description": "Change request submission, approval, and shared maintenance calendar for Vendors and HTX",
+  "license": "MIT"
 }

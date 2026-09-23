@@ -189,3 +189,9 @@ Built and maintained by **Derrick Peh**.
 - Email: derrickpehjh@gmail.com
 
 Issues and feature requests: [GitHub Issues](https://github.com/derrickpehjh/change-management-platform/issues)
+
+---
+
+## License
+
+[MIT](LICENSE) © 2026 Derrick Peh
