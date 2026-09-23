@@ -7,7 +7,6 @@ import { VendorOrgsModule } from "./vendor-orgs/vendor-orgs.module";
 import { SystemAssetsModule } from "./system-assets/system-assets.module";
 import { UsersModule } from "./users/users.module";
 import { ChangeRequestsModule } from "./change-requests/change-requests.module";
-import { StorageModule } from "./storage/storage.module";
 import { HealthController } from "./health/health.controller";
 
 @Module({
@@ -20,7 +19,6 @@ import { HealthController } from "./health/health.controller";
     SystemAssetsModule,
     UsersModule,
     ChangeRequestsModule,
-    StorageModule,
   ],
 })
 export class AppModule {}

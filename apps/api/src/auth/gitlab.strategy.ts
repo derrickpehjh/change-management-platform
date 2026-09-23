@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, type VerifyCallback } from "passport-openidconnect";
 import { AuthService } from "./auth.service";
+import { OidcCookieStateStore } from "./oidc-cookie-state.store";
 
 /**
  * Real self-hosted GitLab SSO, registered only when AUTH_MODE=gitlab (see
@@ -22,6 +23,8 @@ export class GitlabStrategy extends PassportStrategy(Strategy, "gitlab") {
       clientSecret: process.env.GITLAB_CLIENT_SECRET,
       callbackURL: process.env.GITLAB_CALLBACK_URL,
       scope: "openid email profile",
+      // No express-session in this app — keep the OIDC state in a signed cookie.
+      store: new OidcCookieStateStore(process.env.JWT_SECRET as string),
     });
   }
 

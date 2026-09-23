@@ -39,10 +39,17 @@ function cookieOpts() {
   // domains, which is genuinely cross-site — the cookie then needs
   // SameSite=None and Secure or the browser won't send it on API calls.
   const crossSite = process.env.COOKIE_CROSS_SITE === "true";
+  // Secure by default in production. COOKIE_SECURE=false opts out for a
+  // plain-http staging/POC server — browsers drop Secure cookies over http://
+  // on anything but localhost. Cross-site cookies always need Secure.
+  const secureOverride = process.env.COOKIE_SECURE;
+  const secure = secureOverride
+    ? secureOverride === "true"
+    : process.env.NODE_ENV === "production";
   return {
     httpOnly: true,
     sameSite: (crossSite ? "none" : "lax") as "none" | "lax",
-    secure: crossSite || process.env.NODE_ENV === "production",
+    secure: crossSite || secure,
     maxAge: 12 * 60 * 60 * 1000,
     path: "/",
   };

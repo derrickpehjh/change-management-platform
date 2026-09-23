@@ -21,9 +21,6 @@ ALTER TABLE "ChangeRequest" FORCE ROW LEVEL SECURITY;
 ALTER TABLE "Comment" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Comment" FORCE ROW LEVEL SECURITY;
 
-ALTER TABLE "Attachment" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "Attachment" FORCE ROW LEVEL SECURITY;
-
 ALTER TABLE "CRAuditLog" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "CRAuditLog" FORCE ROW LEVEL SECURITY;
 
@@ -47,17 +44,6 @@ CREATE POLICY tenant_isolation ON "Comment"
     OR EXISTS (
       SELECT 1 FROM "ChangeRequest" cr
       WHERE cr.id = "Comment"."crId"
-        AND cr."vendorOrgId" = current_setting('app.vendor_org_id', true)
-    )
-  );
-
-DROP POLICY IF EXISTS tenant_isolation ON "Attachment";
-CREATE POLICY tenant_isolation ON "Attachment"
-  USING (
-    current_setting('app.is_customer', true) = 'true'
-    OR EXISTS (
-      SELECT 1 FROM "ChangeRequest" cr
-      WHERE cr.id = "Attachment"."crId"
         AND cr."vendorOrgId" = current_setting('app.vendor_org_id', true)
     )
   );

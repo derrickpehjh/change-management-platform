@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, ApiError, DEMO_MODE } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { CRForm, type CRFormValues } from "@/components/CRForm";
 import { Icon } from "@/components/Icon";
 import { formatDateTime, RISK_BADGE, STATUS_BADGE, crCode } from "@/lib/ui";
@@ -206,7 +206,6 @@ export default function ChangeRequestDetailPage() {
                 <p className="text-sm text-slate-600 leading-relaxed font-code whitespace-pre-wrap">{cr.rollbackPlan}</p>
               </Card>
 
-              <Attachments crId={cr.id} attachments={cr.attachments} onUploaded={invalidate} />
             </>
           )}
         </div>
@@ -264,76 +263,6 @@ function Card({ title, children }: { title?: string; children: React.ReactNode }
     <div className="bg-white border border-slate-200/80 rounded-lg p-5">
       {title && <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">{title}</h3>}
       {children}
-    </div>
-  );
-}
-
-function Attachments({ crId, attachments, onUploaded }: { crId: string; attachments: any[]; onUploaded: () => void }) {
-  const [uploading, setUploading] = useState(false);
-  const [demoFiles, setDemoFiles] = useState<{ filename: string; sizeBytes: number }[]>([]);
-
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (DEMO_MODE) {
-      setDemoFiles((prev) => [...prev, { filename: file.name, sizeBytes: file.size }]);
-      e.target.value = "";
-      return;
-    }
-    setUploading(true);
-    try {
-      await api.changeRequests.uploadAttachment(crId, file);
-      onUploaded();
-    } finally {
-      setUploading(false);
-      e.target.value = "";
-    }
-  }
-
-  return (
-    <div className="bg-white border border-slate-200/80 rounded-lg p-5">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Verified Attachments ({attachments.length})</h3>
-        <label className="text-[11px] font-medium text-primary cursor-pointer hover:underline flex items-center gap-1">
-          <Icon name="upload_file" className="text-[14px]" />
-          {uploading ? "Uploading…" : "Add file"}
-          <input type="file" className="hidden" onChange={handleFile} disabled={uploading} />
-        </label>
-      </div>
-      {DEMO_MODE && (
-        <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mb-3">
-          Demo environment — files you add here are shown in the list below but are not actually stored.
-        </p>
-      )}
-      {attachments.length === 0 && demoFiles.length === 0 && <p className="text-sm text-slate-400">No attachments yet.</p>}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {attachments.map((a: any) => (
-          <a
-            key={a.id}
-            href={api.changeRequests.attachmentDownloadUrl(crId, a.id)}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2.5 p-2.5 bg-slate-50 border border-slate-100 rounded-md hover:border-slate-300 transition-colors"
-          >
-            <Icon name="description" className="text-slate-500 text-[18px]" />
-            <div className="truncate">
-              <span className="block text-xs font-medium text-slate-800 truncate">{a.filename}</span>
-              <span className="block text-[10px] font-code text-slate-400">
-                {(a.sizeBytes / 1024).toFixed(0)} KB · {a.uploadedBy.name}
-              </span>
-            </div>
-          </a>
-        ))}
-        {demoFiles.map((f, i) => (
-          <div key={i} className="flex items-center gap-2.5 p-2.5 bg-slate-50 border border-dashed border-slate-200 rounded-md">
-            <Icon name="description" className="text-slate-400 text-[18px]" />
-            <div className="truncate">
-              <span className="block text-xs font-medium text-slate-600 truncate">{f.filename}</span>
-              <span className="block text-[10px] font-code text-slate-400">{(f.sizeBytes / 1024).toFixed(0)} KB · not saved (demo)</span>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

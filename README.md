@@ -9,7 +9,6 @@ submission, approval, and a shared maintenance calendar.
 |-------|-----------|
 | Frontend | Next.js 14 (App Router), TypeScript, Tailwind, TanStack Query |
 | Backend | NestJS, Prisma ORM, PostgreSQL |
-| Storage | MinIO (S3-compatible file attachments) |
 | Shared | `@cmp/shared` — enums and types used by both apps |
 
 ---
@@ -20,7 +19,7 @@ submission, approval, and a shared maintenance calendar.
 change-management-platform/
 ├── apps/
 │   ├── api/                # NestJS backend (Prisma schema + migrations in prisma/)
-│   │   └── src/            # auth, change-requests, users, vendor-orgs, system-assets, storage, health
+│   │   └── src/            # auth, change-requests, users, vendor-orgs, system-assets, health
 │   └── web/                # Next.js 14 frontend (App Router)
 │       └── src/            # app/, components/, lib/, providers/
 ├── packages/
@@ -55,7 +54,6 @@ Images are pulled from Docker Hub automatically. Migrations run and demo data is
 |---------|-----|-------|
 | Web UI | http://localhost:3001 | |
 | API | http://localhost:4000 | |
-| MinIO console | http://localhost:9001 | minioadmin / minioadmin |
 
 **Tear down:**
 ```bash
@@ -142,22 +140,52 @@ All settings live in `.env` (copy from `.env.example`).
 | `JWT_SECRET` | **Yes** | — | Session token signing key. Generate with `openssl rand -base64 32`. |
 | `WEB_ORIGIN` | Prod | `http://localhost:3001` | Browser-facing URL of the web app (CORS). |
 | `POSTGRES_PASSWORD` | No | `cmp` | Database password. Change for production. |
-| `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | No | `minioadmin` | MinIO / S3 credentials. Change for production. |
-| `S3_PUBLIC_ENDPOINT` | Remote hosts | `http://localhost:9000` | Used in presigned URLs — must be reachable from the browser. |
 | `AUTH_MODE` | No | `mock` | `mock` or `gitlab`. |
 | `JWT_EXPIRES_IN` | No | `12h` | Session lifetime. |
 | `COOKIE_NAME` | No | `cmp_session` | Session cookie name. |
 | `COOKIE_CROSS_SITE` | No | `false` | Set `true` when API and web are on different domains. |
-| `S3_REGION` | No | `us-east-1` | Needed for AWS S3; ignored by MinIO. |
+| `COOKIE_SECURE` | Plain-http servers | auto | Set `false` when serving over `http://` on a non-localhost host, or login silently fails. |
 | `GITLAB_*` | When `AUTH_MODE=gitlab` | — | OIDC SSO settings (see Authentication). |
 
 ### Production checklist
 
 - Set a strong, unique `JWT_SECRET` — never reuse the example value.
-- Change `POSTGRES_PASSWORD` and the MinIO credentials from their defaults.
+- Change `POSTGRES_PASSWORD` from its default.
 - Do **not** run `AUTH_MODE=mock` in production — any password is accepted.
-- Set `WEB_ORIGIN` and `S3_PUBLIC_ENDPOINT` to your public hostnames.
+- Set `WEB_ORIGIN` to your public hostname.
 - Serve over HTTPS; set `COOKIE_CROSS_SITE=true` only if API and web are on different domains.
+
+---
+
+## Deploying to a staging server (POC)
+
+Uses the Docker Hub images and mock login. On a server with Docker installed:
+
+```bash
+curl -O https://raw.githubusercontent.com/derrickpehjh/change-management-platform/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/derrickpehjh/change-management-platform/main/.env.example
+cp .env.example .env
+```
+
+Edit `.env` (replace `<server-ip>` with the server's IP or hostname):
+
+```bash
+JWT_SECRET=<output of: openssl rand -base64 32>
+WEB_ORIGIN=http://<server-ip>:3001
+COOKIE_SECURE=false            # required over plain http
+```
+
+```bash
+docker compose up -d
+```
+
+Open `http://<server-ip>:3001` and pick a demo account. To update after new images are published: `docker compose pull && docker compose up -d`.
+
+> **Mock login lets anyone who can reach the server sign in as any user.** Restrict inbound access to your own IP (firewall / cloud security group). The browser only needs port **3001**.
+
+### Publishing images
+
+`.github/workflows/docker-publish.yml` rebuilds `cmp-api` and `cmp-web` on every push to `main` and pushes them to Docker Hub as `latest` (plus `sha-<commit>`; `v1.2.3` tags also push `1.2.3`). One-time setup — add repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (Docker Hub access token with Read & Write scope).
 
 ---
 
@@ -165,7 +193,6 @@ All settings live in `.env` (copy from `.env.example`).
 
 - **CR lifecycle** — Draft → Submitted → Under Review → Approved / Rejected → Scheduled → Implemented → Closed
 - **Conflict detection** — cross-vendor maintenance window overlap warnings on the calendar
-- **File attachments** — uploaded to MinIO, served via presigned URLs
 - **Audit trail** — full history of every status change and decision
 - **Multi-tenancy** — vendors are scoped to their own CRs; HTX has full fleet visibility
 - **Admin panel** — vendor org onboarding, system asset management, user role assignment

@@ -16,7 +16,6 @@ const DETAIL_INCLUDE = {
   submittedBy: true,
   systemAssets: true,
   comments: { include: { author: true }, orderBy: { createdAt: "asc" as const } },
-  attachments: { include: { uploadedBy: true }, orderBy: { createdAt: "asc" as const } },
   auditLogs: { include: { actor: true }, orderBy: { createdAt: "asc" as const } },
 };
 
@@ -144,25 +143,6 @@ export class ChangeRequestsService {
     });
     await this.log(id, user.id, "COMMENT", null, null, dto.body.slice(0, 200));
     return comment;
-  }
-
-  async addAttachment(
-    user: JwtUser,
-    id: string,
-    file: { originalname: string; storedPath: string; mimetype: string; size: number },
-  ) {
-    const cr = await this.getOrThrow(id);
-    assertTenantAccess(user, cr.vendorOrgId);
-    return this.prisma.attachment.create({
-      data: {
-        crId: id,
-        filename: file.originalname,
-        storedPath: file.storedPath,
-        mimeType: file.mimetype,
-        sizeBytes: file.size,
-        uploadedById: user.id,
-      },
-    });
   }
 
   async findAll(user: JwtUser, query: ListQueryDto) {
