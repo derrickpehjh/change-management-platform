@@ -22,5 +22,12 @@
     "postcss": "^8.4.45",
     "tailwindcss": "^3.4.10",
     "typescript": "^5.5.4"
-  }
+  },
+  "author": "Derrick Peh <derrickpehjh@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/derrickpehjh/change-management-platform.git",
+    "directory": "apps/web"
+  },
+  "license": "MIT"
 }
