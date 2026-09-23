@@ -9,5 +9,11 @@
   },
   "devDependencies": {
     "typescript": "^5.5.4"
+  },
+  "author": "Derrick Peh <derrickpehjh@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/derrickpehjh/change-management-platform.git",
+    "directory": "packages/shared"
   }
 }

@@ -14,6 +14,26 @@ submission, approval, and a shared maintenance calendar.
 
 ---
 
+## Project structure
+
+```
+change-management-platform/
+├── apps/
+│   ├── api/                # NestJS backend (Prisma schema + migrations in prisma/)
+│   │   └── src/            # auth, change-requests, users, vendor-orgs, system-assets, storage, health
+│   └── web/                # Next.js 14 frontend (App Router)
+│       └── src/            # app/, components/, lib/, providers/
+├── packages/
+│   └── shared/             # @cmp/shared — enums/types shared by api + web
+├── docker/
+│   └── docker-compose.yml  # build-from-source stack
+├── docker-compose.yml      # Docker Hub image stack
+├── railway.json            # Railway deploy config (API Dockerfile)
+└── .env.example            # environment template
+```
+
+---
+
 ## Quick start — Docker Hub
 
 No code clone needed. Only Docker is required.
@@ -113,6 +133,34 @@ First-time GitLab logins arrive as **pending** — a Customer (HTX) user must as
 
 ---
 
+## Configuration
+
+All settings live in `.env` (copy from `.env.example`).
+
+| Variable | Required | Default | Purpose |
+|----------|----------|---------|---------|
+| `JWT_SECRET` | **Yes** | — | Session token signing key. Generate with `openssl rand -base64 32`. |
+| `WEB_ORIGIN` | Prod | `http://localhost:3001` | Browser-facing URL of the web app (CORS). |
+| `POSTGRES_PASSWORD` | No | `cmp` | Database password. Change for production. |
+| `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | No | `minioadmin` | MinIO / S3 credentials. Change for production. |
+| `S3_PUBLIC_ENDPOINT` | Remote hosts | `http://localhost:9000` | Used in presigned URLs — must be reachable from the browser. |
+| `AUTH_MODE` | No | `mock` | `mock` or `gitlab`. |
+| `JWT_EXPIRES_IN` | No | `12h` | Session lifetime. |
+| `COOKIE_NAME` | No | `cmp_session` | Session cookie name. |
+| `COOKIE_CROSS_SITE` | No | `false` | Set `true` when API and web are on different domains. |
+| `S3_REGION` | No | `us-east-1` | Needed for AWS S3; ignored by MinIO. |
+| `GITLAB_*` | When `AUTH_MODE=gitlab` | — | OIDC SSO settings (see Authentication). |
+
+### Production checklist
+
+- Set a strong, unique `JWT_SECRET` — never reuse the example value.
+- Change `POSTGRES_PASSWORD` and the MinIO credentials from their defaults.
+- Do **not** run `AUTH_MODE=mock` in production — any password is accepted.
+- Set `WEB_ORIGIN` and `S3_PUBLIC_ENDPOINT` to your public hostnames.
+- Serve over HTTPS; set `COOKIE_CROSS_SITE=true` only if API and web are on different domains.
+
+---
+
 ## Features
 
 - **CR lifecycle** — Draft → Submitted → Under Review → Approved / Rejected → Scheduled → Implemented → Closed
@@ -130,3 +178,14 @@ First-time GitLab logins arrive as **pending** — a Customer (HTX) user must as
 |----------|-----------|--------|
 | `GET /health/live` | Liveness | Process is alive |
 | `GET /health/ready` | Readiness | DB connected + migrations applied |
+
+---
+
+## Developer
+
+Built and maintained by **Derrick Peh**.
+
+- GitHub: [@derrickpehjh](https://github.com/derrickpehjh)
+- Email: derrickpehjh@gmail.com
+
+Issues and feature requests: [GitHub Issues](https://github.com/derrickpehjh/change-management-platform/issues)
