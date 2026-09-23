@@ -148,6 +148,7 @@ All settings live in `.env` (copy from `.env.example`).
 | `JWT_EXPIRES_IN` | No | `12h` | Session lifetime. |
 | `COOKIE_NAME` | No | `cmp_session` | Session cookie name. |
 | `COOKIE_CROSS_SITE` | No | `false` | Set `true` when API and web are on different domains. |
+| `COOKIE_SECURE` | Plain-http servers | auto | Set `false` when serving over `http://` on a non-localhost host, or login silently fails. |
 | `S3_REGION` | No | `us-east-1` | Needed for AWS S3; ignored by MinIO. |
 | `GITLAB_*` | When `AUTH_MODE=gitlab` | — | OIDC SSO settings (see Authentication). |
 
@@ -158,6 +159,39 @@ All settings live in `.env` (copy from `.env.example`).
 - Do **not** run `AUTH_MODE=mock` in production — any password is accepted.
 - Set `WEB_ORIGIN` and `S3_PUBLIC_ENDPOINT` to your public hostnames.
 - Serve over HTTPS; set `COOKIE_CROSS_SITE=true` only if API and web are on different domains.
+
+---
+
+## Deploying to a staging server (POC)
+
+Uses the Docker Hub images and mock login. On a server with Docker installed:
+
+```bash
+curl -O https://raw.githubusercontent.com/derrickpehjh/change-management-platform/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/derrickpehjh/change-management-platform/main/.env.example
+cp .env.example .env
+```
+
+Edit `.env` (replace `<server-ip>` with the server's IP or hostname):
+
+```bash
+JWT_SECRET=<output of: openssl rand -base64 32>
+WEB_ORIGIN=http://<server-ip>:3001
+S3_PUBLIC_ENDPOINT=http://<server-ip>:9000   # attachment downloads
+COOKIE_SECURE=false                          # required over plain http
+```
+
+```bash
+docker compose up -d
+```
+
+Open `http://<server-ip>:3001` and pick a demo account. To update after new images are published: `docker compose pull && docker compose up -d`.
+
+> **Mock login lets anyone who can reach the server sign in as any user.** Restrict inbound access to your own IP (firewall / cloud security group). The browser only needs ports **3001** and **9000**.
+
+### Publishing images
+
+`.github/workflows/docker-publish.yml` rebuilds `cmp-api` and `cmp-web` on every push to `main` and pushes them to Docker Hub as `latest` (plus `sha-<commit>`; `v1.2.3` tags also push `1.2.3`). One-time setup — add repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (Docker Hub access token with Read & Write scope).
 
 ---
 
