@@ -63,7 +63,6 @@ model User {
   submittedCRs   ChangeRequest[] @relation("submittedBy")
   comments       Comment[]
   auditLogs      CRAuditLog[]
-  attachments    Attachment[]
 }
 
 model SystemAsset {
@@ -96,7 +95,6 @@ model ChangeRequest {
 
   systemAssets  SystemAsset[] @relation("CRSystemAssets")
   comments      Comment[]
-  attachments   Attachment[]
   auditLogs     CRAuditLog[]
 
   createdAt     DateTime  @default(now())
@@ -115,21 +113,6 @@ model Comment {
   author    User          @relation(fields: [authorId], references: [id])
   body      String
   createdAt DateTime      @default(now())
-
-  @@index([crId])
-}
-
-model Attachment {
-  id           String        @id @default(cuid())
-  crId         String
-  cr           ChangeRequest @relation(fields: [crId], references: [id], onDelete: Cascade)
-  filename     String
-  storedPath   String
-  mimeType     String
-  sizeBytes    Int
-  uploadedById String
-  uploadedBy   User          @relation(fields: [uploadedById], references: [id])
-  createdAt    DateTime      @default(now())
 
   @@index([crId])
 }

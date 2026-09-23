@@ -1,9 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
-/** When true, file uploads are shown in the UI but never sent to the API —
- *  used for hosted demo/POC deployments with no durable file storage wired up. */
-export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
-
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -110,12 +106,5 @@ export const api = {
           vendorOrgId ? `&vendorOrgId=${vendorOrgId}` : ""
         }`,
       ),
-    uploadAttachment: async (id: string, file: File) => {
-      const form = new FormData();
-      form.append("file", file);
-      return request<any>(`/change-requests/${id}/attachments`, { method: "POST", body: form });
-    },
-    attachmentDownloadUrl: (id: string, attachmentId: string) =>
-      `${API_URL}/change-requests/${id}/attachments/${attachmentId}/download`,
   },
 };

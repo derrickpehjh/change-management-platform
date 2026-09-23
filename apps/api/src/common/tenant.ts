@@ -7,7 +7,7 @@ export function isCustomer(user: JwtUser): boolean {
 
 /**
  * Application-layer tenant guard: every change-request (and everything that
- * hangs off one — comments, attachments, audit log) is scoped to the owning
+ * hangs off one — comments, audit log) is scoped to the owning
  * vendor org. The Customer role sees everything; the Vendor role never sees
  * another vendor's rows. This is enforced here in the data-access layer (not
  * the UI), and mirrored by Postgres row-level security policies in

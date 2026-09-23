@@ -3,19 +3,12 @@ import {
   Controller,
   Get,
   HttpCode,
-  NotFoundException,
   Param,
   Patch,
   Post,
   Query,
-  Res,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { memoryStorage } from "multer";
-import type { Response } from "express";
 import { Role, type JwtUser } from "@cmp/shared";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { RolesGuard } from "../common/guards/roles.guard";
@@ -23,17 +16,12 @@ import { Roles } from "../common/decorators/roles.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { ChangeRequestsService } from "./change-requests.service";
 import { CommentDto, ConflictQueryDto, CreateChangeRequestDto, DecisionDto, ListQueryDto, UpdateChangeRequestDto } from "./dto";
-import { PrismaService } from "../prisma/prisma.service";
-import { StorageService } from "../storage/storage.service";
-import { assertTenantAccess } from "../common/tenant";
 
 @Controller("change-requests")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ChangeRequestsController {
   constructor(
     private readonly service: ChangeRequestsService,
-    private readonly prisma: PrismaService,
-    private readonly storage: StorageService,
   ) {}
 
   @Post()
@@ -118,39 +106,5 @@ export class ChangeRequestsController {
   @Post(":id/comments")
   addComment(@CurrentUser() user: JwtUser, @Param("id") id: string, @Body() dto: CommentDto) {
     return this.service.addComment(user, id, dto);
-  }
-
-  @Post(":id/attachments")
-  @UseInterceptors(
-    FileInterceptor("file", {
-      storage: memoryStorage(),
-      limits: { fileSize: 15 * 1024 * 1024 },
-    }),
-  )
-  async addAttachment(@CurrentUser() user: JwtUser, @Param("id") id: string, @UploadedFile() file: Express.Multer.File) {
-    const key = await this.storage.upload(file);
-    return this.service.addAttachment(user, id, {
-      originalname: file.originalname,
-      storedPath: key,
-      mimetype: file.mimetype,
-      size: file.size,
-    });
-  }
-
-  @Get(":id/attachments/:attachmentId/download")
-  async download(
-    @CurrentUser() user: JwtUser,
-    @Param("id") id: string,
-    @Param("attachmentId") attachmentId: string,
-    @Res() res: Response,
-  ) {
-    const attachment = await this.prisma.attachment.findUnique({
-      where: { id: attachmentId },
-      include: { cr: true },
-    });
-    if (!attachment || attachment.crId !== id) throw new NotFoundException("Attachment not found");
-    assertTenantAccess(user, attachment.cr.vendorOrgId);
-    const url = await this.storage.presignedDownloadUrl(attachment.storedPath);
-    res.redirect(url);
   }
 }
